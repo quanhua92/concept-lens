@@ -70,12 +70,15 @@ Strict + `verbatimModuleSyntax` (type-only imports need `import type`) +
 ### 1. Research
 
 - Prefer primary, authoritative sources: the original paper, author blog posts,
-  distill.pub, Anthropic/DeepMind explainers. Record sources in the concept folder
-  (a `SOURCES.md` inside the concept directory is fine).
+  distill.pub, Anthropic/DeepMind explainers. **Web-search the primary source before
+  writing any lib code** — do not write from memory and check later. Record sources
+  in the concept's `SOURCES.md` (required).
 - Extract: the precise mechanism, the standard misconception, the minimal math needed
   to show it honestly, and 1–2 "punchline" contrasts (with vs. without, before vs. after).
 - Identify what can be *computed* small: pick dimensions (e.g. 3 tokens × d=8) where the
   real algorithm runs in-browser in microseconds. Never simulate by faking trends.
+- Cited constants (model configs, GPU specs) must be verified against the source
+  (config.json, vendor spec pages); everything else must be computed.
 
 ### 2. Draft
 
@@ -105,9 +108,15 @@ admitted in a `Callout variant="note"`.
 
 - Register the concept, write chapters as lazy default exports.
 - Compute first, render second: get the lib function + its spot-check working before
-  touching JSX.
+  touching JSX. If the demo needs a trained model, train it live in-browser (seeded) —
+  see `src/lib/train.ts` and the pruning/distillation/GRPO concepts for patterns.
+- Hyperparameters for in-browser training loops are part of the honesty contract: tune
+  them in node spot-checks until the demo shows the real behavior (e.g. KD > hard-label
+  recovery), and never ship a demo whose dynamics were never verified.
 - Reuse `Formula`, `Callout`, `Slider`, `Toggle`, `SegmentedControl`, `Button` for all
-  controls and copy blocks. Charts go through `LineChart`/`HeatmapGrid`/`BarVector`.
+  controls and copy blocks. Charts go through `LineChart`/`HeatmapGrid`/`BarVector`/
+  `DistBars`/`BitRow`/`MemoryBar`. Concept-local SVG charts are fine when one-off
+  (see the roofline chart).
 - No comments in code unless genuinely necessary. No new dependencies without asking.
 
 ### 5. Verify
