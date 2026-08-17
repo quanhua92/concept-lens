@@ -11,8 +11,9 @@ import { pruning } from './pruning'
 import { distillation } from './distillation'
 import { lora } from './lora'
 import { roofline } from './roofline'
+import { continuousBatching } from './continuous-batching'
 
-export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, fp8Mtp, pruning, distillation, lora, roofline, residualAttention]
+export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, fp8Mtp, pruning, distillation, lora, roofline, continuousBatching, residualAttention]
 
 export function getConcept(slug: string): ConceptMeta | undefined {
   return concepts.find((c) => c.slug === slug)
