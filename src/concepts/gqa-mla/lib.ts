@@ -58,15 +58,30 @@ export interface BottleneckResult {
   relError: number[]
 }
 
+function orthonormalRows(r: number, d: number, seed: number): Mat {
+  const rng = mulberry32(seed)
+  const basis: Mat = []
+  for (let i = 0; i < r; i++) {
+    let v = Array.from({ length: d }, () => randn(rng))
+    for (const b of basis) {
+      const dot = v.reduce((s, x, j) => s + x * b[j], 0)
+      v = v.map((x, j) => x - dot * b[j])
+    }
+    const n = Math.sqrt(v.reduce((s, x) => s + x * x, 0))
+    basis.push(v.map((x) => x / n))
+  }
+  return basis
+}
+
 export function bottleneckExperiment(d: number, maxRank: number, seed: number, samples = 200): BottleneckResult {
   const rng = mulberry32(seed)
   const X: Mat = randnMat(rng, samples, d, 1)
   const ranks: number[] = []
   const relError: number[] = []
+  const basis = orthonormalRows(maxRank, d, seed + 1)
   for (let r = 1; r <= maxRank; r++) {
-    const W = randnMat(mulberry32(seed * 100 + r), r, d, 1 / Math.sqrt(d))
-    const proj = matmul(X, transposeSafe(W))
-    const recon = matmul(proj, W)
+    const W = basis.slice(0, r)
+    const recon = matmul(matmul(X, transposeSafe(W)), W)
     const nx = Math.sqrt(X.flat().reduce((s, v) => s + v * v, 0))
     const nd = Math.sqrt(X.flat().reduce((s, v, i) => s + (v - recon.flat()[i]) ** 2, 0))
     ranks.push(r)
