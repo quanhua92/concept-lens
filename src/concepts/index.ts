@@ -5,8 +5,9 @@ import { selfAttention } from './self-attention'
 import { multiHead } from './multi-head-attention'
 import { kvCache } from './kv-cache'
 import { gqaMla } from './gqa-mla'
+import { moe } from './moe'
 
-export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, residualAttention]
+export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, residualAttention]
 
 export function getConcept(slug: string): ConceptMeta | undefined {
   return concepts.find((c) => c.slug === slug)
