@@ -138,7 +138,7 @@ export function trainStepsDistill(
     const delta: Mat = out.map((row, b) => {
       const ps = softmaxVec(row, T)
       const pt = mode === 'kd' ? softmaxVec(teacherOut[b], T) : oneHot(hardTarget[b], row.length)
-      const d = row.map((_, i) => (ps[i] - pt[i]) / (T * T))
+      const d = row.map((_, i) => (ps[i] - pt[i]) / n)
       for (let i = 0; i < row.length; i++) {
         loss += pt[i] > 0 ? -pt[i] * Math.log(Math.max(ps[i], 1e-12)) : 0
       }
@@ -192,6 +192,40 @@ export function makeRegressionTask(seed: number, n: number, inD: number, outD: n
   const X: Mat = Array.from({ length: n }, () => Array.from({ length: inD }, () => randn(rng)))
   const Y = forwardMLP(teacher, X).acts[teacher.Ws.length]
   return { X, Y, teacher }
+}
+
+export interface ClassTask {
+  X: Mat
+  labels: number[]
+  classes: number
+  teacher: MLP
+}
+
+export function makeClassificationTask(seed: number, n: number, inD: number, classes: number): ClassTask {
+  const rng = mulberry32(seed)
+  const means: Mat = Array.from({ length: classes }, () => Array.from({ length: inD }, () => randn(rng) * 1.6))
+  const X: Mat = []
+  const labels: number[] = []
+  for (let i = 0; i < n; i++) {
+    const c = i % classes
+    X.push(means[c].map((m) => m + randn(rng) * 0.8))
+    labels.push(c)
+  }
+  const teacher = initMLP([inD, 24, 24, classes], seed + 2)
+  trainStepsDistill(teacher, X, teacher, 300, 0.1, 1, 'hard', labels.map((c) => oneHot(c, classes)))
+  return { X, labels, classes, teacher }
+}
+
+export function accuracy(net: MLP, task: { X: Mat; labels: number[] }): number {
+  const out = forwardMLP(net, task.X)
+  const logits = out.acts[out.acts.length - 1]
+  let correct = 0
+  for (let i = 0; i < logits.length; i++) {
+    let bi = 0
+    for (let j = 1; j < logits[i].length; j++) if (logits[i][j] > logits[i][bi]) bi = j
+    if (bi === task.labels[i]) correct++
+  }
+  return correct / logits.length
 }
 
 export function pruneHiddenUnits(net: MLP, layer: number, keep: number[]): MLP {
