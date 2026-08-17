@@ -1,15 +1,22 @@
 import { addMat, initAttentionWeights, initEmbeddings, matmul, singleHeadAttention, transpose, type Mat } from '@/lib/math'
 
 export const CORPUS = [
-  'the cat sat on the mat',
-  'the dog ran in the park',
-  'the sun was hot',
-  'a big red cat ran',
-  'the cat ran in the park',
-  'a dog sat on the mat',
+  'the cat sat on the mat.',
+  "the dog ran; it's fast!",
+  'the sun was hot.',
+  'a big red cat ran 2 miles',
+  'the cat ran in the park!',
+  'a dog sat on the mat,',
 ]
 
-export const TEST_PHRASE = 'the cat sat on the mat'
+export const TEST_PHRASE = "the cat sat on the mat. it's the dog's"
+
+export const PRETOKENIZE_PATTERN =
+  /'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+/gu
+
+export function preTokenize(text: string): string[] {
+  return text.match(new RegExp(PRETOKENIZE_PATTERN.source, 'gu')) ?? []
+}
 
 export interface MergeStep {
   pair: [string, string]
@@ -17,12 +24,23 @@ export interface MergeStep {
   count: number
 }
 
-function wordToChars(word: string): string[] {
-  return [...word, '</w>']
+function mergeWithin(pieces: string[], pair: [string, string], merged: string): string[] {
+  const out: string[] = []
+  let i = 0
+  while (i < pieces.length) {
+    if (i < pieces.length - 1 && pieces[i] === pair[0] && pieces[i + 1] === pair[1]) {
+      out.push(merged)
+      i += 2
+    } else {
+      out.push(pieces[i])
+      i += 1
+    }
+  }
+  return out
 }
 
 export function trainBPE(corpus: string[], maxMerges: number): MergeStep[] {
-  let words: string[][] = corpus.flatMap((line) => line.split(' ')).map(wordToChars)
+  let words: string[][] = corpus.flatMap((line) => preTokenize(line)).map((pre) => [...pre])
   const merges: MergeStep[] = []
   for (let m = 0; m < maxMerges; m++) {
     const counts = new Map<string, number>()
@@ -41,45 +59,19 @@ export function trainBPE(corpus: string[], maxMerges: number): MergeStep[] {
       }
     }
     if (!bestKey || bestCount < 2) break
-    const [left, right] = bestKey.split('\u0000')
-    const merged = left + right
-    words = words.map((w) => {
-      const out: string[] = []
-      let i = 0
-      while (i < w.length) {
-        if (i < w.length - 1 && w[i] === left && w[i + 1] === right) {
-          out.push(merged)
-          i += 2
-        } else {
-          out.push(w[i])
-          i += 1
-        }
-      }
-      return out
-    })
-    merges.push({ pair: [left, right], merged, count: bestCount })
+    const pair = bestKey.split('\u0000') as [string, string]
+    const merged = pair[0] + pair[1]
+    words = words.map((w) => mergeWithin(w, pair, merged))
+    merges.push({ pair, merged, count: bestCount })
   }
   return merges
 }
 
-export function applyBPE(text: string, merges: MergeStep[], limit: number): string[] {
-  const words = text.split(' ').map(wordToChars)
-  const applied = merges.slice(0, limit)
-  return words.flatMap((w) => {
-    let cur = w
-    for (const { pair, merged } of applied) {
-      const out: string[] = []
-      let i = 0
-      while (i < cur.length) {
-        if (i < cur.length - 1 && cur[i] === pair[0] && cur[i + 1] === pair[1]) {
-          out.push(merged)
-          i += 2
-        } else {
-          out.push(cur[i])
-          i += 1
-        }
-      }
-      cur = out
+export function applyBPEGrouped(text: string, merges: MergeStep[], limit: number): string[][] {
+  return preTokenize(text).map((pre) => {
+    let cur = [...pre]
+    for (const { pair, merged } of merges.slice(0, limit)) {
+      cur = mergeWithin(cur, pair, merged)
     }
     return cur
   })
