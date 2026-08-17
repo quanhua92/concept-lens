@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Callout, Formula, Slider } from '@/components/ui'
-import { applyBPEGrouped, CORPUS, PRETOKENIZE_PATTERN, TEST_PHRASE, preTokenize, trainBPE } from '../lib'
+import { applyBPEGrouped, CORPUS, TEST_PHRASE, preTokenize, trainBPE } from '../lib'
 
 const MAX_MERGES = 16
 
