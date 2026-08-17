@@ -12,6 +12,7 @@ interface LineChartProps {
   logScale?: boolean
   height?: number
   xMax?: number
+  xTickLabels?: string[]
   formatY?: (v: number) => string
 }
 
@@ -22,6 +23,7 @@ export function LineChart({
   logScale = false,
   height = 260,
   xMax,
+  xTickLabels,
   formatY,
 }: LineChartProps) {
   const W = 560
@@ -80,7 +82,7 @@ export function LineChart({
             fill="#71717a"
             fontFamily="ui-monospace, monospace"
           >
-            {t}
+            {xTickLabels ? (xTickLabels[t] ?? String(t)) : t}
           </text>
         ))}
         {yLabel ? (

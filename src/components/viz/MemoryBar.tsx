@@ -1,4 +1,4 @@
-import { cn, fmt } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { fmtBytes } from '@/lib/format'
 
 export interface MemItem {
@@ -32,8 +32,4 @@ export function MemoryBar({ items, maxBytes, className }: { items: MemItem[]; ma
       ))}
     </div>
   )
-}
-
-export function fmtGB(n: number): string {
-  return fmt(n / 1024 ** 3, 2)
 }
