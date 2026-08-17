@@ -385,3 +385,79 @@ export function floatMaxFinite(fmt: FloatFormat): number {
   const mMax = fmt.hasInf ? (1 << fmt.mBits) - 1 : (1 << fmt.mBits) - 2
   return (1 + mMax / (1 << fmt.mBits)) * Math.pow(2, maxExpField - fmt.bias)
 }
+
+export function matVec(m: Mat, v: number[]): number[] {
+  return m.map((row) => row.reduce((s, x, i) => s + x * v[i], 0))
+}
+
+export function vecDot(a: number[], b: number[]): number {
+  return a.reduce((s, x, i) => s + x * b[i], 0)
+}
+
+export interface SVDTerm {
+  sigma: number
+  u: number[]
+  v: number[]
+}
+
+export function svdTop(m: Mat, k: number, seed = 1, iters = 80): SVDTerm[] {
+  const rows = m.length
+  const cols = m[0].length
+  const rng = mulberry32(seed)
+  const mt = transpose(m)
+  const terms: SVDTerm[] = []
+  const deflated = m.map((r) => [...r])
+  for (let t = 0; t < k; t++) {
+    let v = Array.from({ length: cols }, () => rng() + 0.01)
+    let vNorm = Math.sqrt(vecDot(v, v))
+    v = v.map((x) => x / vNorm)
+    for (let it = 0; it < iters; it++) {
+      let u = matVec(deflated, v)
+      const un = Math.sqrt(vecDot(u, u))
+      if (un < 1e-14) break
+      u = u.map((x) => x / un)
+      v = matVec(mt, u)
+      for (const prev of terms) {
+        const d = vecDot(v, prev.v)
+        v = v.map((x, i) => x - d * prev.v[i])
+      }
+      vNorm = Math.sqrt(vecDot(v, v))
+      if (vNorm < 1e-14) break
+      v = v.map((x) => x / vNorm)
+    }
+    let u = matVec(deflated, v)
+    const sigma = Math.sqrt(vecDot(u, u))
+    if (sigma < 1e-12) break
+    u = u.map((x) => x / sigma)
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) deflated[i][j] -= sigma * u[i] * v[j]
+    }
+    terms.push({ sigma, u, v })
+  }
+  return terms
+}
+
+export function svdReconstruct(terms: SVDTerm[]): Mat | null {
+  if (terms.length === 0) return null
+  const rows = terms[0].u.length
+  const cols = terms[0].v.length
+  const out: Mat = Array.from({ length: rows }, () => new Array<number>(cols).fill(0))
+  for (const { sigma, u, v } of terms) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) out[i][j] += sigma * u[i] * v[j]
+    }
+  }
+  return out
+}
+
+export function relFrobeniusError(a: Mat, b: Mat): number {
+  let diff = 0
+  let norm = 0
+  for (let i = 0; i < a.length; i++) {
+    for (let j = 0; j < a[0].length; j++) {
+      diff += (a[i][j] - b[i][j]) ** 2
+      norm += a[i][j] ** 2
+    }
+  }
+  return Math.sqrt(diff / Math.max(norm, 1e-12))
+}

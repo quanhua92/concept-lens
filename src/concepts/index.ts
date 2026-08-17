@@ -9,8 +9,9 @@ import { moe } from './moe'
 import { fp8Mtp } from './fp8-mtp'
 import { pruning } from './pruning'
 import { distillation } from './distillation'
+import { lora } from './lora'
 
-export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, fp8Mtp, pruning, distillation, residualAttention]
+export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, fp8Mtp, pruning, distillation, lora, residualAttention]
 
 export function getConcept(slug: string): ConceptMeta | undefined {
   return concepts.find((c) => c.slug === slug)
