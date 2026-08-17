@@ -35,7 +35,8 @@ export default function RooflineChapter() {
     pts.push(`L ${sx(ridge).toFixed(1)} ${sy(peakFlops).toFixed(1)}`)
     pts.push(`L ${sx(xMax).toFixed(1)} ${sy(peakFlops).toFixed(1)}`)
     return pts.join(' ')
-  }, [gpu])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [peakBytes, peakFlops, ridge])
 
   const decode = decodePoint(batch, ctx, gpu)
   const prefill = prefillPoint(4096, gpu)
