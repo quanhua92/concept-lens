@@ -82,7 +82,7 @@ export default function ForwardChapter() {
             <DistBars
               items={top.map(({ v, i }) => ({ label: VOCAB[i], p: Math.exp(v) / top.reduce((s, t) => s + Math.exp(t.v), 0), color: '#22d3ee' }))}
               highlight={top.findIndex((t) => t.i === best)}
-              height={120}
+              height={200}
             />
             <p className="mt-2 font-mono text-xs text-mute">
               argmax → <span className="text-delta">“{VOCAB[best]}”</span>
