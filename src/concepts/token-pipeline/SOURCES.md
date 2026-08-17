@@ -7,4 +7,4 @@
 - Holtzman et al., "The Curious Case of Neural Text Degeneration" (2019) — nucleus (top-p) sampling. https://arxiv.org/abs/1904.09751
 - Fan et al. (2018) — top-k sampling.
 
-Notes: the in-browser trainer applies the GPT-2 regex on characters (not bytes) for legibility; merge counting and the within-piece constraint are exact. The tiny LM uses random (untrained) weights — stated in copy.
+Notes: the in-browser encoder replicates GPT-2 inference exactly — the pre-tokenizer regex, byte-level encoding via the original bytes_to_unicode mapping (Ġ = space, 😀 = 4 byte-symbols), and rank-ordered merging against a frozen merge table (learned once from the tiny corpus, never adapted to input). The vocab-size slider selects how many frozen ranks exist; 0 = pure byte-level vocab (256). Explosion cases (emoji chains, rare long words) are the honest consequence of pairs that never earned ranks. The tiny LM uses random (untrained) weights — stated in copy.
