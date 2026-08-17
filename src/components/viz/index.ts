@@ -1,4 +1,7 @@
 export { HeatmapGrid, HeatmapLegend } from './HeatmapGrid'
 export { BarVector } from './BarVector'
 export { LineChart } from './LineChart'
+export { MemoryBar } from './MemoryBar'
+export { BitRow, BitLegend } from './BitRow'
+export { DistBars } from './DistBars'
 export type { Series } from './LineChart'

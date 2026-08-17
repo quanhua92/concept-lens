@@ -6,6 +6,7 @@ export const residualAttention: ConceptMeta = {
   title: 'Attention Residual',
   tagline: 'Why every transformer block adds to the stream instead of replacing it',
   difficulty: 'intermediate',
+  track: 'architecture',
   chapters: [
     {
       id: 'stream',
