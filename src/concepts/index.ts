@@ -15,8 +15,9 @@ import { continuousBatching } from './continuous-batching'
 import { pagedAttention } from './paged-attention'
 import { speculativeDecoding } from './speculative-decoding'
 import { quantization } from './quantization'
+import { dpoGrpo } from './dpo-grpo'
 
-export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, fp8Mtp, pruning, distillation, lora, roofline, continuousBatching, pagedAttention, speculativeDecoding, quantization, residualAttention]
+export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, fp8Mtp, pruning, distillation, lora, roofline, continuousBatching, pagedAttention, speculativeDecoding, quantization, dpoGrpo, residualAttention]
 
 export function getConcept(slug: string): ConceptMeta | undefined {
   return concepts.find((c) => c.slug === slug)
