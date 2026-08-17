@@ -12,8 +12,9 @@ import { distillation } from './distillation'
 import { lora } from './lora'
 import { roofline } from './roofline'
 import { continuousBatching } from './continuous-batching'
+import { pagedAttention } from './paged-attention'
 
-export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, fp8Mtp, pruning, distillation, lora, roofline, continuousBatching, residualAttention]
+export const concepts: ConceptMeta[] = [tokenPipeline, selfAttention, multiHead, kvCache, gqaMla, moe, fp8Mtp, pruning, distillation, lora, roofline, continuousBatching, pagedAttention, residualAttention]
 
 export function getConcept(slug: string): ConceptMeta | undefined {
   return concepts.find((c) => c.slug === slug)
